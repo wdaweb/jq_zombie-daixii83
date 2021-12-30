@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    @font-face {
+      font-family: 'KG Blank Space Font';
+      src: url("./fonts/KgBlankSpaceSketch-VYZV.ttf")format("truetype");
+    }
+
+    body {
+      cursor: none;
+      font-family: 'KG Blank Space Font', sans-serif;
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #btn-start {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      font-size: 1.5rem;
+      font-weight: bolder;
+      z-index: 99;
+    }
+
+    #start-bk {
+      width: 1000px;
+      height: 800px;
+      background: rgba(255, 255, 255, 0.5);
+      position: absolute;
+    }
+
+    #game {
+      background: url('./images/background.png');
+      width: 1000px;
+      height: 800px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #game img {
+      height: 100px;
+      position: absolute;
+    }
+
+    .box {
+      width: 100px;
+      height: 100px;
+      position: absolute;
+      top: -150px;
+      z-index: 99;
+    }
+
+    .none {
+      display: none;
+    }
+
+    #basket {
+      background-image: url(./images/basket.png);
+      background-size: cover;
+      width: 250px;
+      height: 214px;
+      position: fixed;
+      top: 60%;
+      left: 50%;
+      transform: translate(-50%, -55%);
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    .time {
+      width: 250px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      font-size: 3rem;
+      position: absolute;
+      z-index: 99;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 1rem;
+      padding: 1rem;
+      color: rgba(92, 66, 33, 0.7);
+    }
+
+    .score {
+      width: 300px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      font-size: 3rem;
+      position: absolute;
+      z-index: 99;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      right: 0;
+      margin: 1rem;
+      padding: 1rem;
+      color: rgba(92, 66, 33, 0.7);
+      position: absolute;
+    }
+
+    #score,
+    #time {
+      font-size: 3rem;
+    }
+
+    .explode {
+      width: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="game">
+    <input type="button" value="START" id="btn-start">
+    <div id="start-bk"></div>
+    <p class="score">SCORE：<span id="score">0</span></p>
+    <p class="time">TIME：<span id="time">0</span></p>
+    <div id="basket"></div>
+  </div>
+
+  <script src="./jquery-3.6.0.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    // 分數
+    let score = 0
+    // 倒數時間
+    let countdown = 60
+    // 計時器
+    let timer = 0
+    // 籃子
+    // window.onload = function () {
+    // const basket = document.getElementById('basket')
+    // document.onmousemove = (event) => {
+    // event = event || window.event
+    // let left = event.clientX
+    // let top = event.clientY
+    // basket.style.left = left + "px"
+    // basket.style.top = top + "px"
+    // }
+    // }
+    // 籃子
+    $(window).mousemove(function (event) {
+      $('#basket').css('left', event.pageX + 'px')
+      $('#basket').css('top', event.pageY + 'px')
+    })
+
+    let random = function (min, max) {
+      return Math.round(Math.random() * (max - min) + min);
+    }
+
+    const drop = (egg) => {
+      // 蛋由上往下墜落至底部
+      const top = `${100}%`
+      const speed = random(850, 8500)
+
+      egg.stop().animate({
+        top
+      }, speed)
+    }
+
+    const drop1 = (egg1) => {
+      // 蛋由上往下墜落至底部
+      const top = `${100}%`
+      const speed = random(1000, 10000)
+
+      egg1.stop().animate({
+        top
+      }, speed)
+    }
+
+    $('#btn-start').click(function () {
+      // 停用開始按鈕
+      $(this).attr('disabled', true)
+      $(this).addClass('none')
+      $('#start-bk').addClass('none')
+      // 重設
+      score = 0
+      $('#score').text(score)
+      countdown = 60
+      $('#time').text(countdown)
+
+      // 遊戲開始
+      timer = setInterval(function () {
+        // 倒數
+        countdown--
+        $('#time').text(countdown)
+
+        // 隨機位置出現蛋
+        let randegg = Math.round(Math.random() * 10)
+        const random = function (min, max) {
+          return Math.round(Math.random() * (max - min) + min)
+        }
+        // 隨機選擇蛋
+        const num = random(1, 7)
+        const num1 = random(1, 7)
+        if (num === 0) return num
+        if (num1 === 0) return num1
+
+        if (randegg > 3 && $("#game .egg").length < 100) {
+          const top = `${-20}%`
+          const left = `${random(0, 90)}%`
+          const left1 = `${random(20, 70)}%`
+          const size = `${random(100, 200)}px`
+          const egg = $(`<img class="egg" src="./images/egg${num}new.gif" style="width:${size}; height:${size};top:${top}; left:${left}">`)
+          const egg1 = $(`<img class="egg" src="./images/egg${num1}new.gif" style="width:${size}; height:${size};top:${top}; left:${left1}">`)
+          $("#game").append(egg, egg1)
+          drop(egg)
+          drop1(egg1)
+        } else {
+          const top = `${-20}%`
+          const left = `${random(10, 80)}%`
+          const size = `${random(100, 200)}px`
+          const bomb = $(`<img class="bomb" src="./images/bomb${num}new.gif" style="width:${size}; height:${size};top:${top}; left:${left}">`)
+          // for (let i = 0; i < 50; i++) {
+          // const bombnum = i
+          $("#game").append(bomb)
+          drop(bomb)
+        }
+
+        // 時間到
+        if (countdown <= 0) {
+          clearInterval(timer)
+          // 清除遊戲區域
+          $('#game img').remove()
+          // 重新起用開始按鈕
+          $("#btn-start").attr('disabled', false)
+          $("#btn-start").removeClass('none')
+          $("#start-bk").removeClass('none')
+          Swal.fire({
+            icon: 'info',
+            title: '時間到',
+            text: `你得到 ${score} 分`
+          })
+        }
+      }, 1000)
+    })
+
+    $('#game').on('click', '.egg', function () {
+      $(this).addClass('none')
+      $(this).stop()
+      score++
+      $('#score').text(score)
+    })
+
+    $('#game').on('click', '.bomb', function () {
+      $(this).attr('src', './images/explode.gif')
+      $(this).removeClass('bomb').addClass('explode')
+
+      score--
+      $('#score').text(score)
+    })
+  </script>
+</body>
+
+</html>
